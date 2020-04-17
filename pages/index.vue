@@ -39,7 +39,9 @@
 export default {
   data() {
     return {
+      //背景图
       banners: [],
+      //tab栏
       options: [
         { lable: "攻略", value: "搜索城市" },
         { lable: "酒店", value: "请输入城市搜索酒店" },
@@ -58,6 +60,11 @@ export default {
   },
   methods: {
     handleOptions(index) {
+      //搜索栏跳转
+      if (index === 2) {
+        this.$router.push("/air");
+      }
+      //添加高亮
       this.current = index;
     }
   }

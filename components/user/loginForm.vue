@@ -48,7 +48,21 @@ export default {
   methods: {
     // 提交登录
     handleLoginSubmit() {
-      console.log(this.form);
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          this.$axios({
+            url: "/accounts/login",
+            data: this.form,
+            method: "POST"
+          }).then(res => {
+            // console.log(res);
+            const { data } = res;
+            // 通过this.$store.commit调用mutations的方法
+            this.$store.commit("user/setUserInfo", data);
+            this.$router.replace("/");
+          });
+        }
+      });
     }
   }
 };

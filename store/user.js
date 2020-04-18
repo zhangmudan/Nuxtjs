@@ -16,6 +16,7 @@ export const mutations = {
 export const actions = {
   // 声明一个函数，函数名可以随便起
   // 该函数有两个参数，第一个参数是 store 对象(固定的), 第二个参数是传入的参数(不固定)
+  //登录
   login(store, data) {
     return this.$axios({
       url: "/accounts/login",
@@ -26,6 +27,31 @@ export const actions = {
       const { data } = res;
       // 通过store.commit 调用 mutations 的方法 可以省略user
       store.commit("setUserInfo", data);
+      return data
+    });
+  },
+  //手机验证码
+  captcha(store, data) {
+    return this.$axios({
+      url: "/captchas",
+      method: "POST",
+      data: {
+        tel: data
+      }
+    }).then(res => {
+      const { code } = res.data
+      return code
+    });
+  },
+  //注册
+  register(store, data) {
+    return this.$axios({
+      url: "/accounts/register",
+      method: "POST",
+      data
+    }).then(res => {
+      const { data } = res
+      store.commit('setUserInfo', data)
       return data
     });
   }

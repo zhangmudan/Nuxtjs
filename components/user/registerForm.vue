@@ -31,6 +31,16 @@
 <script>
 export default {
   data() {
+    //确认密码自定义检验规则函数
+    const validatePassWord = (rule, value, callback) => {
+      if (value === "") {
+        callback(new Error("请再次输入密码"));
+      } else if (value !== this.form.password) {
+        callback(new Error("两次输入密码不一致!"));
+      } else {
+        callback();
+      }
+    };
     return {
       // 表单数据
       form: {
@@ -70,27 +80,35 @@ export default {
             trigger: "blur"
           }
         ],
-        checkPassword: [
-          {
-            required: true,
-            message: "请再次输入密码",
-            trigger: "blur"
-          }
-        ]
+        //自定义检验规则
+        checkPassword: [{ validator: validatePassWord, trigger: "blur" }]
       }
     };
   },
   methods: {
     // 发送验证码
-    handleSendCaptcha() {},
+    handleSendCaptcha() {
+      //手机验证码接口
+      if (this.form.username === "") {
+        this.$refs.form.validateField("username");
+        return;
+      }
+      this.$store.dispatch("user/captcha", this.form.username).then(res => {
+        this.$message.success("模拟验证码已发送:" + res);
+      });
+    },
 
     // 注册
     handleRegSubmit() {
-      if (this.form.password !== this.form.checkPassword) {
-        console.log("密码不一致,请重新输入");
-      } else {
-        console.log(this.form);
-      }
+      const { checkPassword, ...other } = this.form;
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          this.$store.dispatch("user/register", other).then(res => {
+            this.$message.success("注册成功");
+            this.$router.replace("/");
+          });
+        }
+      });
     }
   }
 };

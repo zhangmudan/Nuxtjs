@@ -6,14 +6,20 @@
     </el-form-item>
 
     <el-form-item class="form-item" prop="password">
-      <el-input placeholder="密码" type="password" v-model="form.password"></el-input>
+      <el-input
+        placeholder="密码"
+        type="password"
+        v-model="form.password"
+      ></el-input>
     </el-form-item>
 
     <p class="form-text">
       <nuxt-link to="#">忘记密码</nuxt-link>
     </p>
 
-    <el-button class="submit" type="primary" @click="handleLoginSubmit">登录</el-button>
+    <el-button class="submit" type="primary" @click="handleLoginSubmit"
+      >登录</el-button
+    >
   </el-form>
 </template>
 
@@ -50,15 +56,8 @@ export default {
     handleLoginSubmit() {
       this.$refs.form.validate(valid => {
         if (valid) {
-          this.$axios({
-            url: "/accounts/login",
-            data: this.form,
-            method: "POST"
-          }).then(res => {
-            // console.log(res);
-            const { data } = res;
-            // 通过this.$store.commit调用mutations的方法
-            this.$store.commit("user/setUserInfo", data);
+          this.$store.dispatch("user/login", this.form).then(res => {
+            this.$message.success("登录成功," + res.user.nickname);
             this.$router.replace("/");
           });
         }

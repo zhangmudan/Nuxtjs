@@ -1,6 +1,8 @@
 // 存放仓库该分类（user）下的数据, export const state = {}是固定的格式
-export const state = {
-  userInfo: {}
+export const state = () => {
+  return {
+    userInfo: {}
+  }
 };
 // 修改state中的数据 export const mutations = {}是固定的格式
 // store的数据不能直接修改，必须要使用mutations来修改

@@ -32,6 +32,8 @@
 export default {
   data() {
     //确认密码自定义检验规则函数
+    //rule 表示当前的规则,这个不需要使用 value 是输入框的值
+    //callback 是必须调用,可以传入error对象,实现报错
     const validatePassWord = (rule, value, callback) => {
       if (value === "") {
         callback(new Error("请再次输入密码"));
@@ -90,6 +92,7 @@ export default {
     handleSendCaptcha() {
       //手机验证码接口
       if (this.form.username === "") {
+        //对部分表单字段进行校验的方法
         this.$refs.form.validateField("username");
         return;
       }
@@ -100,6 +103,7 @@ export default {
 
     // 注册
     handleRegSubmit() {
+      //解构数据
       const { checkPassword, ...other } = this.form;
       this.$refs.form.validate(valid => {
         if (valid) {

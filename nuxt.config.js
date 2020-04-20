@@ -33,7 +33,8 @@ export default {
   plugins: [
     '@/plugins/element-ui',
     //新增本地数据持久化
-    { src: '@/plugins/localStorage', ssr: false }
+    { src: '@/plugins/localStorage', ssr: false },
+    '@/plugins/axios'
   ],
   /*
   ** Nuxt.js dev-modules

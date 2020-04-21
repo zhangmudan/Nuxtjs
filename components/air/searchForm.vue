@@ -118,6 +118,23 @@ export default {
     };
   },
   methods: {
+    //封装请求城市的方法
+    getCities(value) {
+      return this.$axios({
+        url: "/airs/city",
+        params: {
+          name: value
+        }
+      }).then(res => {
+        const { data } = res.data;
+        // console.log(data);
+        const newData = data.map(v => {
+          v.value = v.name.replace("市", "");
+          return v;
+        });
+        return newData;
+      });
+    },
     // tab切换时触发
     handleSearchTab(item, index) {},
 
@@ -125,23 +142,16 @@ export default {
     // value 是选中的值，cb是回调函数，接收要展示的列表
     queryDepartSearch(value, cb) {
       if (!value) {
+        //禁止输入框的值是空的时候显示下拉框
+        cb([]);
+        //如果输入框的值为空的话把之前的城市列表删除
+        this.departCityList = [];
         return;
       }
       this.$refs.form.validateField("departCity");
-      this.$axios({
-        url: "/airs/city",
-        params: {
-          name: value
-        }
-      }).then(res => {
-        const { data } = res.data;
-        // console.log(data);
-        const newData = data.map(v => {
-          v.value = v.name.replace("市", "");
-          return v;
-        });
-        this.departCityList = newData;
-        cb(newData);
+      this.getCities(value).then(res => {
+        this.departCityList = res;
+        cb(res);
       });
     },
 
@@ -149,23 +159,14 @@ export default {
     // value 是选中的值，cb是回调函数，接收要展示的列表
     queryDestSearch(value, cb) {
       if (!value) {
+        cb([]);
+        this.destCityList = [];
         return;
       }
       this.$refs.form.validateField("destCity");
-      this.$axios({
-        url: "/airs/city",
-        params: {
-          name: value
-        }
-      }).then(res => {
-        const { data } = res.data;
-        // console.log(data);
-        const newData = data.map(v => {
-          v.value = v.name.replace("市", "");
-          return v;
-        });
-        this.destCityList = newData;
-        cb(newData);
+      this.getCities(value).then(res => {
+        this.destCityList = res;
+        cb(res);
       });
     },
 
@@ -173,11 +174,13 @@ export default {
     handleDepartSelect(item) {
       // console.log(item);
       this.departCode = item.sort;
+      this.departCityList = [item];
     },
 
     // 目标城市下拉选择时触发
     handleDestSelect(item) {
       this.destCode = item.sort;
+      this.destCityList = [item];
     },
     //出发城市失去焦点默认选择第一项
     handleBlurDepartSelect() {
@@ -199,7 +202,13 @@ export default {
     },
 
     // 触发和目标城市切换时触发
-    handleReverse() {},
+    handleReverse() {
+      const { departCity, departCode, destCity, destCode } = this.form;
+      this.form.destCity = departCity;
+      this.form.destCode = departCode;
+      this.form.departCity = destCity;
+      this.form.departCode = destCode;
+    },
 
     // 提交表单是触发
     handleSubmit() {

@@ -1,9 +1,11 @@
 <template>
   <div class="flight-item">
-    <div>
+    <div @click="isShow = !isShow">
       <!-- 显示的机票信息 -->
       <el-row type="flex" align="middle" class="flight-info">
-        <el-col :span="6"> <span>东航 </span> MU5316 </el-col>
+        <el-col :span="6">
+          <span>{{ data.airline_name }} </span> {{ data.flight_no }}</el-col
+        >
         <el-col :span="12">
           <el-row
             type="flex"
@@ -11,15 +13,19 @@
             class="flight-info-center"
           >
             <el-col :span="8" class="flight-airport">
-              <strong>20:30</strong>
-              <span>白云机场T1</span>
+              <strong>{{ data.dep_time }}</strong>
+              <span
+                >{{ data.org_airport_name }}{{ data.org_airport_quay }}</span
+              >
             </el-col>
             <el-col :span="8" class="flight-time">
-              <span>2时20分</span>
+              <span>{{ intervalTime }}</span>
             </el-col>
             <el-col :span="8" class="flight-airport">
-              <strong>22:50</strong>
-              <span>虹桥机场T2</span>
+              <strong>{{ data.arr_time }}</strong>
+              <span
+                >{{ data.dst_airport_name }}{{ data.dst_airport_quay }}</span
+              >
             </el-col>
           </el-row>
         </el-col>
@@ -30,7 +36,12 @@
     </div>
     <div class="flight-recommend">
       <!-- 隐藏的座位信息列表 -->
-      <el-row type="flex" justify="space-between" align="middle">
+      <el-row
+        type="flex"
+        justify="space-between"
+        align="middle"
+        v-show="isShow"
+      >
         <el-col :span="4">低价推荐</el-col>
         <el-col :span="20">
           <el-row
@@ -38,18 +49,18 @@
             justify="space-between"
             align="middle"
             class="flight-sell"
+            v-for="(item, index) in data.seat_infos"
+            :key="index"
           >
             <el-col :span="16" class="flight-sell-left">
-              <span>经济舱</span> | 上海一诺千金航空服务有限公司
+              <span>{{ item.name }}</span> | {{ item.supplierName }}
             </el-col>
-            <el-col :span="5" class="price">
-              ￥1345
-            </el-col>
+            <el-col :span="5" class="price"> ￥{{ item.settle_price }} </el-col>
             <el-col :span="3" class="choose-button">
               <el-button type="warning" size="mini">
                 选定
               </el-button>
-              <p>剩余：83</p>
+              <p>剩余：{{ item.discount }}</p>
             </el-col>
           </el-row>
         </el-col>
@@ -60,14 +71,45 @@
 
 <script>
 export default {
-  // props: {
-  //   // 数据
-  //   data: {
-  //     type: Object,
-  //     // 默认是空数组
-  //     default: {}
-  //   }
-  // }
+  data() {
+    return {
+      isShow: false
+    };
+  },
+  props: {
+    // props声明为对象的好处，
+    // 1.可以声明类型，避免类型错误（但是不能阻止）
+    // 2.如果使用组件时候不传该属性，可以有默认值
+    data: {
+      type: Object,
+      // 默认是空数组
+      default: {}
+    }
+  },
+  computed: {
+    intervalTime() {
+      //起飞时间
+      const dep = this.data.dep_time; //20:50
+      //到达时间
+      const arr = this.data.arr_time; //22:50
+      // 分割出 时 分
+      const start = dep.split(":"); //[20,50]
+      const end = arr.split(":"); //[22,50]
+      //隔天到达
+      if (end[0] < start[0]) {
+        end[0] = +end[0] + 24;
+      }
+      //到达分钟-起飞分钟
+      const dis = end[0] * 60 + +end[1] - (start[0] * 60 + +start[1]);
+      //时
+      const hour = Math.floor(dis / 60);
+      //分
+      const min = dis % 60;
+      // console.log(hour, min);
+
+      return `${hour}时${min}分`;
+    }
+  }
 };
 </script>
 

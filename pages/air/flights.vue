@@ -12,7 +12,7 @@
         <!-- 航班信息 -->
         <FlightsItem
           v-for="(item, index) in flightsArr"
-          :key="index"
+          :key="`${pageIndex}` + index"
           :data="item"
         />
         <el-pagination
@@ -28,9 +28,7 @@
       </div>
 
       <!-- 侧边栏 -->
-      <div class="aside">
-        <!-- 侧边栏组件 -->
-      </div>
+      <FlightsAside />
     </el-row>
   </section>
 </template>
@@ -39,6 +37,7 @@
 import FlightsListHead from "@/components/air/flightsListHead";
 import FlightsItem from "@/components/air/flightsItem";
 import FlightsFilters from "@/components/air/flightsFilters";
+import FlightsAside from "@/components/air/flightsAside";
 export default {
   data() {
     return {
@@ -62,7 +61,8 @@ export default {
   components: {
     FlightsItem,
     FlightsListHead,
-    FlightsFilters
+    FlightsFilters,
+    FlightsAside
   },
   mounted() {
     this.$axios({
@@ -99,7 +99,11 @@ export default {
       this.pageIndex = val;
     },
     getFilter(arr) {
+      //切换条件时,页数应该回到第一页
+      this.pageIndex = 1;
+      //当前符合条件的数据
       this.flightsList.flights = arr;
+      this.total = arr.length;
     }
   }
 };

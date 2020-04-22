@@ -11,12 +11,7 @@
         {{ data.info.departDate }}
       </el-col>
       <el-col :span="4">
-        <el-select
-          size="mini"
-          v-model="airport"
-          placeholder="起飞机场"
-          @change="handleAirport"
-        >
+        <el-select size="mini" v-model="airport" placeholder="起飞机场">
           <el-option
             v-for="(item, index) in data.options.airport"
             :key="index"
@@ -27,12 +22,7 @@
         </el-select>
       </el-col>
       <el-col :span="4">
-        <el-select
-          size="mini"
-          v-model="flightTimes"
-          placeholder="起飞时间"
-          @change="handleFlightTimes"
-        >
+        <el-select size="mini" v-model="flightTimes" placeholder="起飞时间">
           <el-option
             v-for="(item, index) in data.options.flightTimes"
             :key="index"
@@ -43,12 +33,7 @@
         </el-select>
       </el-col>
       <el-col :span="4">
-        <el-select
-          size="mini"
-          v-model="company"
-          placeholder="航空公司"
-          @change="handleCompany"
-        >
+        <el-select size="mini" v-model="company" placeholder="航空公司">
           <el-option
             v-for="(item, index) in data.options.company"
             :key="index"
@@ -59,12 +44,7 @@
         </el-select>
       </el-col>
       <el-col :span="4">
-        <el-select
-          size="mini"
-          v-model="airSize"
-          placeholder="机型"
-          @change="handleAirSize"
-        >
+        <el-select size="mini" v-model="airSize" placeholder="机型">
           <el-option
             v-for="(item, index) in airSizeList"
             :key="index"
@@ -87,6 +67,8 @@
         撤销
       </el-button>
     </div>
+    <!-- 只是单纯的为了能够触发computed的filter函数的运行,不需要渲染 -->
+    <div v-show="false">{{ filter }}</div>
   </div>
 </template>
 
@@ -112,41 +94,44 @@ export default {
       default: {}
     }
   },
+  computed: {
+    filter() {
+      const arr = this.data.flights.filter(v => {
+        //默认所有条件都是符合的
+        let valid = true;
+        // 当条件（this.company）有值的时候我们才需要判断，表示用户选择了条件
+        // 由于valid变量已经假设所有的数据都是符合条件的
+        // 所以是不符合条件的条件的航班，就把valid设置为false，最后就return出false
+        // 自然这条数据就不会加入到arr中
+        //选择机场
+        if (this.airport && v.org_airport_name !== this.airport) {
+          valid = false;
+        }
+        //选择航空公司
+        if (this.company && this.company !== v.airline_name) {
+          valid = false;
+        }
+        //选择机型
+        if (this.airSize && v.plane_size !== this.airSize) {
+          valid = false;
+        }
+        //选择起飞时间
+        if (this.flightTimes) {
+          const time = this.flightTimes.split(",");
+          const current = v.dep_time.split(":")[0];
+          if (+time[0] > +current || +current >= +time[1]) {
+            valid = false;
+          }
+        }
+
+        return valid;
+      });
+
+      this.$emit("getFilter", arr);
+      return "";
+    }
+  },
   methods: {
-    // 选择机场时候触发
-    handleAirport(value) {
-      const arr = this.data.flights.filter(v => {
-        return v.org_airport_name === this.airport;
-      });
-      this.$emit("getFilter", arr);
-    },
-
-    // 选择出发时间时候触发
-    handleFlightTimes(value) {
-      console.log(value);
-
-      const arr = this.data.flights.filter(v => {
-        return v.dep_time === this.flightTimes;
-      });
-      this.$emit("getFilter", arr);
-    },
-
-    // 选择航空公司时候触发
-    handleCompany(value) {
-      const arr = this.data.flights.filter(v => {
-        return v.airline_name === this.company;
-      });
-      this.$emit("getFilter", arr);
-    },
-
-    // 选择机型时候触发
-    handleAirSize(value) {
-      const arr = this.data.flights.filter(v => {
-        return v.plane_size === this.airSize;
-      });
-      this.$emit("getFilter", arr);
-    },
-
     // 撤销条件时候触发
     handleFiltersCancel() {
       (this.airport = ""), // 机场

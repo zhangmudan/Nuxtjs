@@ -214,7 +214,8 @@ export default {
     handleSubmit() {
       this.$refs.form.validate(valid => {
         if (valid) {
-          console.log(this.form);
+          // console.log(this.form);
+          this.$store.commit("air/setSearchList", this.form);
           this.$router.push({
             path: "/air/flights",
             query: this.form

@@ -11,6 +11,7 @@ export const mutations = {
     //把数据加在最前面
     state.searchList.unshift(data)
     if (state.searchList.length > 5) {
+      //控制数组长度
       state.searchList.length = 5
     }
   }

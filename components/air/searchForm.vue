@@ -215,6 +215,7 @@ export default {
       this.$refs.form.validate(valid => {
         if (valid) {
           // console.log(this.form);
+          //把修改仓库数据
           this.$store.commit("air/setSearchList", this.form);
           this.$router.push({
             path: "/air/flights",

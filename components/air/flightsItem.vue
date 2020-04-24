@@ -57,6 +57,7 @@
             </el-col>
             <el-col :span="5" class="price"> ￥{{ item.settle_price }} </el-col>
             <el-col :span="3" class="choose-button">
+              <!-- 点击选定跳转到订单页 -->
               <nuxt-link
                 :to="{
                   path: `/air/order`,

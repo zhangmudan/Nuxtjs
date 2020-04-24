@@ -6,14 +6,20 @@
     </el-form-item>
 
     <el-form-item class="form-item" prop="password">
-      <el-input placeholder="密码" type="password" v-model="form.password"></el-input>
+      <el-input
+        placeholder="密码"
+        type="password"
+        v-model="form.password"
+      ></el-input>
     </el-form-item>
 
     <p class="form-text">
       <nuxt-link to="#">忘记密码</nuxt-link>
     </p>
 
-    <el-button class="submit" type="primary" @click="handleLoginSubmit">登录</el-button>
+    <el-button class="submit" type="primary" @click="handleLoginSubmit"
+      >登录</el-button
+    >
   </el-form>
 </template>
 
@@ -53,7 +59,7 @@ export default {
           // 调用actions的方法, res就是await后面的promise对象then的返回值
           this.$store.dispatch("user/login", this.form).then(res => {
             this.$message.success("登录成功," + res.user.nickname);
-            this.$router.replace("/");
+            this.$router.back();
           });
         }
       });

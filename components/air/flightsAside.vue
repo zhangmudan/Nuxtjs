@@ -50,9 +50,25 @@
 </template>
 
 <script>
+import moment from "moment";
 export default {
   methods: {
-    choice(item) {}
+    choice(item) {
+      //不能直接修改仓库数据,所以复制一份
+      const data = { ...item };
+      //获取当天日期
+      const today = moment().format("YYYY-MM-DD");
+      // 去掉横杆比大小, /-/g 正则 全局匹配横杆
+      const dataNum = +data.departDate.replace(/-/g, "");
+      const todayNum = +today.replace(/-/g, "");
+      if (todayNum > dataNum) {
+        data.departDate = today;
+      }
+      this.$router.push({
+        path: "/air/flights",
+        query: data
+      });
+    }
   }
 };
 </script>

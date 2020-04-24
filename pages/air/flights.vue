@@ -65,17 +65,24 @@ export default {
     FlightsAside
   },
   mounted() {
-    this.$axios({
-      url: "/airs",
-      params: this.$route.query
-    }).then(res => {
-      // console.log(res);
-      this.flightsList = res.data;
-      //备份数据不能直接赋值,因为赋值的是同一个内存地址,当上一个更改时,备份数据也会被改
-      this.flightsLisCache = { ...res.data };
-      this.total = this.flightsList.total;
-    });
+    this.getFlights();
   },
+  //1.可以监听路由变化
+  // watch: {
+  // 监听路由的变化
+  //   $route() {
+  //获取数据
+  //     this.getFlights();
+  //   }
+  // },
+  //2.使用路由守卫监听数据变化
+  beforeRouteUpdate(to, from, next) {
+    // next必须要执行的函数
+    next();
+    // 一定要先跳转了再获取数据
+    this.getFlights();
+  },
+  // 计算属性会监听函数内部所有实例(this)属性的变化
   computed: {
     // 切割后数据
     flightsArr() {
@@ -87,6 +94,19 @@ export default {
     }
   },
   methods: {
+    //封装获取机票数据函数
+    getFlights() {
+      this.$axios({
+        url: "/airs",
+        params: this.$route.query
+      }).then(res => {
+        // console.log(res);
+        this.flightsList = res.data;
+        //备份数据不能直接赋值,因为赋值的是同一个内存地址,当上一个更改时,备份数据也会被改
+        this.flightsLisCache = { ...res.data };
+        this.total = this.flightsList.total;
+      });
+    },
     //切换条数,页面数据
     handleSizeChange(val) {
       //显示条数

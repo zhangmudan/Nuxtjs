@@ -2,37 +2,44 @@
   <div class="main">
     <div class="air-column">
       <h2>乘机人</h2>
-      <el-form class="member-info" :model="form" :rules="rules">
+      <el-form class="member-info" ref="form" :rules="rules" :model="form">
         <div
           class="member-info-item"
           v-for="(item, index) in form.users"
           :key="index"
         >
-          <el-form-item label="乘机人类型">
-            <el-input
-              placeholder="姓名"
-              class="input-with-select"
-              v-model="item.username"
-            >
-              <el-select slot="prepend" value="1" placeholder="请选择">
-                <el-option label="成人" value="1"></el-option>
-              </el-select>
-            </el-input>
-          </el-form-item>
+          <!-- 由于el-form-item组件可以展示错误信息，由于乘机人和证件号码是一组，所以用一个item组件包起来 -->
+          <el-form-item prop="users">
+            <el-form-item label="乘机人类型">
+              <el-input
+                placeholder="姓名"
+                class="input-with-select"
+                v-model="item.username"
+              >
+                <el-select slot="prepend" value="1" placeholder="请选择">
+                  <el-option label="成人" value="1"></el-option>
+                </el-select>
+              </el-input>
+            </el-form-item>
 
-          <el-form-item label="证件类型">
-            <el-input
-              placeholder="证件号码"
-              class="input-with-select"
-              v-model="item.id"
-            >
-              <el-select slot="prepend" value="1" placeholder="请选择">
-                <el-option label="身份证" value="1" :checked="true"></el-option>
-              </el-select>
-            </el-input>
+            <el-form-item label="证件类型">
+              <el-input
+                placeholder="证件号码"
+                class="input-with-select"
+                v-model="item.id"
+              >
+                <el-select slot="prepend" value="1" placeholder="请选择">
+                  <el-option
+                    label="身份证"
+                    value="1"
+                    :checked="true"
+                  ></el-option>
+                </el-select>
+              </el-input>
+            </el-form-item>
+            <!-- 删除乘机人 -->
+            <span class="delete-user" @click="handleDeleteUser(index)">-</span>
           </el-form-item>
-
-          <span class="delete-user" @click="handleDeleteUser(index)">-</span>
         </div>
       </el-form>
 
@@ -61,12 +68,12 @@
     <div class="air-column">
       <h2>联系人</h2>
       <div class="contact">
-        <el-form label-width="60px">
-          <el-form-item label="姓名">
+        <el-form label-width="80px" :rules="rules" :model="form" ref="form2">
+          <el-form-item label="姓名" prop="contactName">
             <el-input v-model="form.contactName"></el-input>
           </el-form-item>
 
-          <el-form-item label="手机">
+          <el-form-item label="手机" prop="contactPhone">
             <el-input placeholder="请输入内容" v-model="form.contactPhone">
               <template slot="append">
                 <el-button @click="handleSendCaptcha">发送验证码</el-button>
@@ -74,7 +81,7 @@
             </el-input>
           </el-form-item>
 
-          <el-form-item label="验证码">
+          <el-form-item label="验证码" prop="captcha">
             <el-input v-model="form.captcha"></el-input>
           </el-form-item>
         </el-form>
@@ -83,13 +90,39 @@
         >
       </div>
     </div>
-    {{ allPrice }}
+    <span v-show="false">{{ allPrice }}</span>
   </div>
 </template>
 
 <script>
 export default {
   data() {
+    // rule代表规则
+    // value是prop绑定的属性的值
+    // callback 是一个回调函数，并且是必须要调用的，如果要报错可以传入一个错误对象
+    const validatorUser = (rule, value, callback) => {
+      //假设条件都通过
+      let vaild = true;
+      //value 是数组 [{username:'a',id:12}]
+      value.forEach(v => {
+        if (vaild === false) {
+          return;
+        }
+        if (v.username.trim() === "") {
+          vaild = false;
+
+          return callback(new Error("乘机人姓名不能为空"));
+        }
+        if (v.id.trim() === "") {
+          vaild = false;
+
+          return callback(new Error("乘机人证件号码不能为空"));
+        }
+      });
+      if (vaild) {
+        callback();
+      }
+    };
     return {
       form: {
         users: [
@@ -106,13 +139,43 @@ export default {
         seat_xid: "", //座位
         air: "" //航班id
       },
-      details: {}
+      details: {
+        seat_infos: {}
+      },
+      rules: {
+        //自定义检验规则
+        users: [{ validator: validatorUser, trigger: "blur" }],
+        contactName: [{ required: true, message: "联系人名字不能为空" }],
+        contactPhone: [{ required: true, message: "联系人电话不能为空" }],
+        captcha: [{ required: true, message: "手机验证码不能为空" }]
+      }
     };
   },
   computed: {
     //计算总价格
     allPrice() {
-      return 123;
+      // 如果请求还没回来，直接返回为0
+      if (!this.details.seat_infos) {
+        return 0;
+      }
+      let price = 0;
+      //机票单价
+      price += this.details.seat_infos.org_settle_price;
+      //机建
+      price += this.details.airport_tax_audlet;
+      //保险
+      this.form.insurances.forEach(v => {
+        this.details.insurances.forEach(item => {
+          if (v === item.id) {
+            price += item.price;
+          }
+        });
+      });
+      //人数
+      price *= this.form.users.length;
+      //把数据存储到store
+      this.$store.commit("air/setAllPrice", price);
+      return price;
     }
   },
   mounted() {
@@ -167,18 +230,31 @@ export default {
     // 提交订单
     handleSubmit() {
       // console.log(this.form);
-      this.$axios({
-        url: "/airorders",
-        data: this.form,
-        method: "POST",
-        headers: {
-          // 这里千万要注意Bearer 后面必须要有一个空格（基于JWT标准）
-          Authorization: `Bearer ` + this.$store.state.user.userInfo.token
-        }
-      }).then(res => {
-        console.log(res);
-        const { message } = res.data;
-        this.$message.success(message);
+      this.$refs.form.validate(valid => {
+        this.$refs.form2.validate(valid2 => {
+          if (valid) {
+            this.$axios({
+              url: "/airorders",
+              data: this.form,
+              method: "POST",
+              headers: {
+                // 这里千万要注意Bearer 后面必须要有一个空格（基于JWT标准）
+                Authorization: `Bearer ` + this.$store.state.user.userInfo.token
+              }
+            }).then(res => {
+              // console.log(res);
+              const { message } = res.data;
+              const { id } = res.data.data;
+              this.$message.success(message);
+              this.$router.push({
+                path: "/air/pay",
+                query: {
+                  id
+                }
+              });
+            });
+          }
+        });
       });
     }
   }

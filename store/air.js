@@ -6,7 +6,8 @@ export const state = () => {
     //选中机票的详细信息
     flightData: {
       seat_infos: {}
-    }
+    },
+    allPrice: ''
   }
 }
 //同步修改数据
@@ -21,5 +22,8 @@ export const mutations = {
   },
   setFlightData(state, data) {
     state.flightData = data
+  },
+  setAllPrice(state, data) {
+    state.allPrice = data
   }
 }

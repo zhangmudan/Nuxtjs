@@ -2,7 +2,7 @@
   <div class="main">
     <div class="air-column">
       <h2>乘机人</h2>
-      <el-form class="member-info" v-model="form">
+      <el-form class="member-info" :model="form" :rules="rules">
         <div
           class="member-info-item"
           v-for="(item, index) in form.users"
@@ -43,7 +43,7 @@
 
     <div class="air-column">
       <h2>保险</h2>
-      <div v-for="(item, index) in details" :key="index">
+      <div v-for="(item, index) in details.insurances" :key="index">
         <div class="insurance-item">
           <el-checkbox
             :checked="false"
@@ -83,6 +83,7 @@
         >
       </div>
     </div>
+    {{ allPrice }}
   </div>
 </template>
 
@@ -108,10 +109,16 @@ export default {
       details: {}
     };
   },
+  computed: {
+    //计算总价格
+    allPrice() {
+      return 123;
+    }
+  },
   mounted() {
     //获取座位和航班id
     const { seat_xid, id } = this.$route.query;
-    console.log(seat_xid, id);
+    // console.log(seat_xid, id);
     this.form.air = id;
     this.form.seat_xid = seat_xid;
     //获取航班详情
@@ -121,10 +128,10 @@ export default {
         seat_xid
       }
     }).then(res => {
-      console.log(res);
+      // console.log(res);
       //保险
-      const { insurances } = res.data;
-      this.details = insurances;
+      this.details = res.data;
+      this.$store.commit("air/setFlightData", this.details);
     });
   },
   methods: {

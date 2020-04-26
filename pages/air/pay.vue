@@ -40,6 +40,7 @@ export default {
     };
   },
   mounted() {
+    //把setTimeout 的函数设置成async函数,函数内部可以使用await来同步执行代码
     setTimeout(async () => {
       //await 的返回值就是then 的函数的参数(res)
       const res = await this.$axios({
@@ -55,27 +56,34 @@ export default {
       // 第一个参数canvas节点元素
       // 第二个是生成二维码的链接
       QRCode.toCanvas(canvas, this.list.payInfo.code_url, { width: 200 });
-      // this.timeId = setInterval(async () => {
-      //   const checkRes = await this.$axios({
-      //     url: "/airorders/checkpay",
-      //     data: {
-      //       nonce_str: this.list.id,
-      //       out_trade_no: this.list.orderNo
-      //     },
-      //     methods: "POST",
-      //     headers: {
-      //       // 这里千万要注意Bearer 后面必须要有一个空格（基于JWT标准）
-      //       Authorization: `Bearer ` + this.$store.state.user.userInfo.token
-      //     }
-      //   });
-      //   console.log(checkRes);
-      // }, 3000);
+      this.timeId = setInterval(async () => {
+        const checkRes = await this.$axios({
+          url: "/airorders/checkpay",
+          data: {
+            id: this.list.id,
+            nonce_str: this.list.price,
+            out_trade_no: this.list.orderNo
+          },
+          method: "POST",
+          headers: {
+            // 这里千万要注意Bearer 后面必须要有一个空格（基于JWT标准）
+            Authorization: `Bearer ` + this.$store.state.user.userInfo.token
+          }
+        });
+        if (checkRes.data.statusTxt === "支付完成") {
+          this.$message.success("订单支付完成");
+          //停止定时器
+          clearInterval(this.timeId);
+          this.$router.push("/air");
+        }
+      }, 3000);
     }, 0);
+  },
+  //如果组件被卸载或者销毁后(也就是页面切换后),同时也要销毁定时器
+  destroyed() {
+    //停止定时器
+    clearInterval(this.timeId);
   }
-  // destroyed() {
-  //   //停止定时器
-  //   clearInterval(this.timeId);
-  // }
 };
 </script>
 

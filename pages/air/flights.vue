@@ -9,22 +9,27 @@
         <!-- 航班头部布局 -->
         <FlightsListHead />
 
-        <!-- 航班信息 -->
-        <FlightsItem
-          v-for="(item, index) in flightsArr"
-          :key="`${pageIndex}` + index"
-          :data="item"
-        />
-        <el-pagination
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-          :current-page="pageIndex"
-          :page-sizes="[5, 10, 15, 20]"
-          :page-size="pageSize"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="total"
-        >
-        </el-pagination>
+        <div v-if="flightsList.flights.length">
+          <!-- 航班信息 -->
+          <FlightsItem
+            v-for="(item, index) in flightsArr"
+            :key="`${pageIndex}` + index"
+            :data="item"
+          />
+          <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="pageIndex"
+            :page-sizes="[5, 10, 15, 20]"
+            :page-size="pageSize"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="total"
+          >
+          </el-pagination>
+        </div>
+        <div v-else class="empty">
+          当前没有合适的航班
+        </div>
       </div>
 
       <!-- 侧边栏 -->
@@ -142,5 +147,9 @@ export default {
 
 .aside {
   width: 240px;
+}
+.empty {
+  text-align: center;
+  color: #ccc;
 }
 </style>

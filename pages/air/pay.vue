@@ -35,27 +35,47 @@ import QRCode from "qrcode";
 export default {
   data() {
     return {
-      list: {}
+      list: {},
+      timeId: ""
     };
   },
   mounted() {
-    setTimeout(() => {
-      this.$axios({
+    setTimeout(async () => {
+      //await 的返回值就是then 的函数的参数(res)
+      const res = await this.$axios({
         url: "/airorders/" + this.$route.query.id,
         headers: {
           // 这里千万要注意Bearer 后面必须要有一个空格（基于JWT标准）
           Authorization: `Bearer ` + this.$store.state.user.userInfo.token
         }
-      }).then(res => {
-        // console.log(res);
-        this.list = res.data;
-        const canvas = document.querySelector("#qrcode-stage");
-        // 第一个参数canvas节点元素
-        // 第二个是生成二维码的链接
-        QRCode.toCanvas(canvas, this.list.payInfo.code_url, { width: 200 });
       });
+      // console.log(res);
+      this.list = res.data;
+      const canvas = document.querySelector("#qrcode-stage");
+      // 第一个参数canvas节点元素
+      // 第二个是生成二维码的链接
+      QRCode.toCanvas(canvas, this.list.payInfo.code_url, { width: 200 });
+      // this.timeId = setInterval(async () => {
+      //   const checkRes = await this.$axios({
+      //     url: "/airorders/checkpay",
+      //     data: {
+      //       nonce_str: this.list.id,
+      //       out_trade_no: this.list.orderNo
+      //     },
+      //     methods: "POST",
+      //     headers: {
+      //       // 这里千万要注意Bearer 后面必须要有一个空格（基于JWT标准）
+      //       Authorization: `Bearer ` + this.$store.state.user.userInfo.token
+      //     }
+      //   });
+      //   console.log(checkRes);
+      // }, 3000);
     }, 0);
   }
+  // destroyed() {
+  //   //停止定时器
+  //   clearInterval(this.timeId);
+  // }
 };
 </script>
 
